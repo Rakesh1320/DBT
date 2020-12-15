@@ -1,0 +1,115 @@
+use dbt;
+drop table Prod_master;
+create table  Prod_master( Prod_cd varchar(30),
+Prod_name varchar(30),
+Qty_in_stock long,	Booked_qty int);
+insert into Prod_master values('P1', 'Floppies',10000 ,1000);
+ insert into Prod_master values('P2','Printers',5000,600);
+insert into Prod_master values ('P3','Modems',3000,200);
+
+ desc Prod_master;
+ 
+ create table Ord_master (Ord_no int,Cust_cd varchar(5),status varchar(5));
+select * from Ord_master;
+insert into Ord_master values(1,'C','P');
+
+create table Ord_dtl (Ord_no int,Prod_cd  varchar(5),Qty int);
+insert into Ord_dtl values(1,'P1',100);
+insert into Ord_dtl values(1,'P2',200);
+insert into Ord_dtl values(1,'P2',300);
+
+insert into Ord_dtl values(1,'P2',300);
+
+
+select * from Ord_dtl;
+
+delete from Ord_dtl where Prod_cd='p2';
+
+
+
+select * from Prod_master;
+
+#1. Write a Before Insert trigger on Ord_dtl.
+# Anytime a row is inserted in Ord_dtl, the
+#Booked_qty in Prod_master should be increased accordingly.
+drop trigger xyz;
+
+
+delimiter $$
+create trigger xyz1 before insert on Ord_dtl
+for each row
+begin
+insert into  Prod_master value
+(new.Ord_no,new.Prod_cd,new.Qty);
+end;
+end $$
+
+delimiter $$
+create trigger xyz1 before insert on Ord_dtl
+for each row
+begin
+UPDATE Prod_master
+SET Booked_qty=new.Qty+Booked_qty
+WHERE Prod_cd=new.Prod_cd; 
+end;
+end $$
+
+
+#2. Write a Before Delete trigger on Ord_dtl. Anytime a row is deleted from Ord_dtl, the
+#Booked_qty in Prod_mastershould be decreased accordingly.
+drop trigger xyz2;
+
+delimiter $$
+create trigger xyz2 before delete on Ord_dtl
+for each row
+BEGIN
+UPDATE Prod_master
+SET Booked_qty=old.Qty-Booked_qty
+WHERE Prod_cd=old.Prod_cd;
+ end;
+end$$
+
+
+
+
+
+
+
+
+
+
+
+select * from employee;
+insert into employee values (1,'jgj',2,4,65454)
+delete from employee where emp_name='jgj'
+select * from department;
+alter table department add dept_sal int ;
+update department set dept_sal=10000 where dept_id=1;
+update department set dept_sal=20000 where dept_id=2;
+update department set dept_sal=30000 where dept_id=3;
+
+
+#3. write A trigger to update the total salary of a department in dept_sal  table  when an employee is added or removed from  emp table .
+
+
+
+delimiter $$
+create trigger xyz3 after insert on employee
+for each row
+BEGIN
+UPDATE department
+SET dept_sal=new.salary+dept_sal
+WHERE dept_id=new.dept_id;
+ end;
+end$$
+
+
+delimiter $$
+create trigger xyz4 after delete on employee
+for each row
+BEGIN
+UPDATE department
+SET dept_sal=dept_sal-old.salary
+WHERE dept_id=old.dept_id;
+ end;
+end$$
